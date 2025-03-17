@@ -4,45 +4,56 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeGenerator
-{
-    public Employee[] generate()
-    {
-        Employee[] employees = null;
-        List<String> lines = new ArrayList<>();
-        try
-        {
-            lines = Files.readAllLines(Paths.get("data/data2.csv"));
-            employees = new Employee[lines.size()];
-        }
-        catch (IOException e)
-        {
-            System.out.println("Error reading data");
+public class EmployeeGenerator {
+    public Employee[] generate() {
+        List<String> lines = readLinesFromFile("data/data2.csv");
+        if (lines == null || lines.isEmpty()) {
+            System.out.println("No data to process");
+            return new Employee[0];
         }
 
-        if (lines.isEmpty())
-            return employees;
-
-        for (int i = 0; i < lines.size(); i++)
-        {
+        Employee[] employees = new Employee[lines.size()];
+        for (int i = 0; i < lines.size(); i++) {
             String[] split = lines.get(i).split(",");
-            employees[i] = new Employee();
-            employees[i].id = i;
-            employees[i].name = split[0];
-            employees[i].surname = split[1];
-            employees[i].pesel = split[2];
-            employees[i].gender = split[3];
-            employees[i].position = split[4];
-            employees[i].birthdayDate = DataParser.getDate(split[5]);
-            employees[i].employmentDate = DataParser.getDate(split[6]);
-            Address address = new Address();
-            address.street = split[7];
-            address.number = Integer.parseInt(split[8]);
-            address.city = split[9];
-            address.postalCode = split[10];
-            employees[i].address = address;
+            if (split.length < 11) {
+                System.out.println("Invalid data format at line " + (i + 1));
+                continue;
+            }
+            try {
+                Employee employee = createEmployee(i, split);
+                employees[i] = employee;
+            } catch (Exception e) {
+                System.out.println("Error creating employee from line " + (i + 1) + ": " + e.getMessage());
+            }
         }
-
         return employees;
+    }
+
+    private List<String> readLinesFromFile(String filePath) {
+        try {
+            return Files.readAllLines(Paths.get(filePath));
+        } catch (IOException e) {
+            System.out.println("Error reading data from " + filePath + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Employee createEmployee(int id, String[] data) {
+        Employee employee = new EmployeeBasic();
+        employee.id = id;
+        employee.name = data[0].trim();
+        employee.surname = data[1].trim();
+        employee.pesel = data[2].trim();
+        employee.gender = data[3].trim();
+        employee.position = data[4].trim();
+        employee.birthdayDate = DataParser.getDate(data[5].trim());
+        employee.employmentDate = DataParser.getDate(data[6].trim());
+        Address address = new Address();
+        address.street = data[7].trim();
+        address.number = Integer.parseInt(data[8].trim());
+        address.city = data[9].trim();
+        address.postalCode = data[10].trim();
+        employee.address = address;
+        return employee;
     }
 }

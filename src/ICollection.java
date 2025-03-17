@@ -1,8 +1,8 @@
     public interface ICollection<E> {
-        void add(E element);
+        void add(E element) throws InvalidEmployeeDataException;
         boolean remove(E element);
-        long findPosition(E element);
+        int findPosition(E element);
         E get(int index);
-        long size();
+        int size();
         void clear();
     }
